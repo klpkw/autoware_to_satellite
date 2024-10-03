@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>autoware_to_satellite</name>
+  <version>0.0.1</version>
+  <description>TODO: Package description</description>
+  <maintainer email="pakhomovda@a-r-s.dev">bobo</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>message_filters</depend>
+  <depend>satellite_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>swri_transform_util</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>tier4_map_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
