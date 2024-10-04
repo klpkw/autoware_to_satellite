@@ -201,6 +201,7 @@ class ConvertorNode(Node):
 
     def timer_cb(self):
         if self.__projector is None:
+            self.get_logger().warn("Map projector info was not received", throttle_duration_sec=1.)
             return
 
         try:
