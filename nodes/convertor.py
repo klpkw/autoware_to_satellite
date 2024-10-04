@@ -16,7 +16,7 @@ from std_msgs.msg import Header
 from tf2_ros import Buffer, TransformListener
 from tf2_geometry_msgs import do_transform_pose
 from tier4_map_msgs.msg import MapProjectorInfo
-from typing import List
+from typing import List, Optional
 
 
 def calculate_xor_checksum(data):
@@ -32,7 +32,7 @@ class ConvertorNode(Node):
     __gear_msg = GearReport()
     __velocity_msg = VelocityReport()
     __turn_indicators_msg = TurnIndicatorsReport()
-
+    __projector: Optional[CoordinateConvertor] = None
     def __init__(self):
         super().__init__("autoware_to_satellite")
 
@@ -89,7 +89,7 @@ class ConvertorNode(Node):
 
     def map_projector_cb(self, msg: MapProjectorInfo):
         try:
-            self.projector = CoordinateConvertor(msg)
+            self.__projector = CoordinateConvertor(msg)
         except Exception as e:
             print(e)
             pass
@@ -136,7 +136,7 @@ class ConvertorNode(Node):
         p.position.z = transform.transform.translation.z
         p.orientation = transform.transform.rotation
 
-        coordinate_array = self.projector.xy_to_lat_lon([p])
+        coordinate_array = self.__projector.xy_to_lat_lon([p])
         return coordinate_array[0]
 
     def get_satellite_objects(self, msg: PredictedObjects) -> List[sObject]:
@@ -163,7 +163,7 @@ class ConvertorNode(Node):
             else:
                 pose = predicted_obj.kinematics.initial_pose_with_covariance.pose
 
-            coordinate = self.projector.xy_to_lat_lon([pose])[0]
+            coordinate = self.__projector.xy_to_lat_lon([pose])[0]
 
             classification = sObject.CLASSIFICATION_UNKNOWN
 
@@ -200,7 +200,7 @@ class ConvertorNode(Node):
         return satellite_objects
 
     def timer_cb(self):
-        if self.projector is None:
+        if self.__projector is None:
             return
 
         try:
