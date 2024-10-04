@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-
 from geometry_msgs.msg import Pose
 from satellite_msgs.msg import Coordinate
 from tf_transformations import euler_from_quaternion
@@ -14,6 +13,8 @@ class CoordinateConvertor(ABC):
 
         if msg.projector_type == MapProjectorInfo.TRANSVERSE_MERCATOR:
             return super().__new__(TranverseMercator)
+        elif msg.projector_type == MapProjectorInfo.MGRS:
+            return super().__new__(MgrsConvertor)
         else:
             raise NotImplementedError(f"Currently unsupported projector_type {msg.projector_type}")
 
@@ -43,6 +44,34 @@ class TranverseMercator(CoordinateConvertor):
                 Coordinate(
                     latitude=transformed_pt[0],
                     longitude=transformed_pt[1],
+                    altitude=self.z - pose.position.z,
+                    azimuth=y
+                )
+            )
+        return coordinates
+    
+
+class MgrsConvertor(CoordinateConvertor):
+    def __init__(self, msg: MapProjectorInfo):
+        import mgrs
+        self.__mgrs = mgrs.MGRS()
+        self.z = msg.map_origin.altitude
+
+    def xy_to_lat_lon(self, xy_data: List[Pose]) -> List[Coordinate]:
+        coordinates = []
+        for pose in xy_data:
+            # Convert the XY local coordinates to MGRS (assuming they are MGRS coordinates)
+            mgrs_string = f"{int(pose.position.x)} {int(pose.position.y)}"
+            lat_lon = self.__mgrs.toLatLon(mgrs_string)
+
+            r, p, y = euler_from_quaternion(
+                [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
+            )
+
+            coordinates.append(
+                Coordinate(
+                    latitude=lat_lon[0],
+                    longitude=lat_lon[1],
                     altitude=self.z - pose.position.z,
                     azimuth=y
                 )
