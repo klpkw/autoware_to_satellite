@@ -2,4 +2,4 @@ autoware_to_satellite:
   ros__parameters:
     map_frame: map
     vehicle_frame: base_link
-    target_rate: 10
+    target_rate: 10.

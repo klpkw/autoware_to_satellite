@@ -13,7 +13,7 @@ def generate_launch_description():
 
     convertor_node = Node(
         package=pkg_name,
-        executable="convertor.py",
+        executable="convertor",
         name="autoware_to_satellite",
         parameters=[
             LaunchConfiguration("params_path")
