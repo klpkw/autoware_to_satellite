@@ -19,12 +19,15 @@
 #include <tier4_map_msgs/msg/map_projector_info.hpp>
 #include <satellite_msgs/msg/monitor.hpp>
 
+#include <GeographicLib/MGRS.hpp>
+#include <GeographicLib/UTMUPS.hpp>
+
 #include "projector.hpp"
 
-uint32_t calculate_xor_checksum(const std::array<uint8_t, 16>& uuid)
+uint32_t calculate_xor_checksum(const std::array<uint8_t, 16> &uuid)
 {
   uint32_t checksum = 0x00000000;
-  for (const auto& byte : uuid)
+  for (const auto &byte : uuid)
   {
     checksum ^= byte;
   }
@@ -35,9 +38,7 @@ class AutowareToSatellite : public rclcpp::Node
 {
 public:
   AutowareToSatellite()
-    : Node("autoware_to_satellite")
-    , tf_buffer_(std::make_shared<tf2_ros::Buffer>(get_clock()))
-    , tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_))
+      : Node("autoware_to_satellite"), tf_buffer_(std::make_shared<tf2_ros::Buffer>(get_clock())), tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_))
   {
     this->declare_parameter<std::string>("map_frame_id", "map");
     this->declare_parameter<std::string>("vehicle_frame_id", "base_link");
@@ -205,7 +206,7 @@ private:
               tf_buffer_->lookupTransform(map_frame_, msg.header.frame_id, msg.header.stamp);
           tf2::doTransform(predicted_obj.kinematics.initial_pose_with_covariance.pose, pose, transform_stamped);
         }
-        catch (tf2::TransformException& ex)
+        catch (tf2::TransformException &ex)
         {
           RCLCPP_ERROR(this->get_logger(), "%s", ex.what());
           continue;
@@ -285,23 +286,9 @@ private:
   {
     predicted_objects_ = *msg;
   }
-
-  void map_projector_cb(const tier4_map_msgs::msg::MapProjectorInfo::SharedPtr msg)
-  {
-    try
-    {
-      projector_ = CoordinateConvertor::create(*msg);
-      projector_received_ = true;
-    }
-    catch (const std::runtime_error& e)
-    {
-      projector_received_ = false;
-      RCLCPP_ERROR(this->get_logger(), "Failed to create CoordinateConvertor: %s", e.what());
-    }
-  }
 };
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<AutowareToSatellite>();
